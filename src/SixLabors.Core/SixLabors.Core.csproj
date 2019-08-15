@@ -13,7 +13,7 @@
         <PackageTags>rectangle;point;size,primitives</PackageTags>
         <PackageIconUrl>https://raw.githubusercontent.com/SixLabors/Branding/master/icons/core/sixlabors.core.128.png</PackageIconUrl>
         <PackageProjectUrl>https://github.com/SixLabors/Core</PackageProjectUrl>
-        <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/SixLabors/Core</RepositoryUrl>
         <Copyright>Copyright (c) Six Labors and contributors.</Copyright>
