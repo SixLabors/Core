@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <Description>Low level primitives for use across Six Labors projects.</Description>
-        <VersionPrefix Condition="$(packageversion) != ''">$(packageversion)</VersionPrefix>
-        <VersionPrefix Condition="$(packageversion) == ''">0.1.0-alpha2</VersionPrefix>
+        <VersionSuffix Condition="$(versionsuffix) != ''">$(versionsuffix)</VersionSuffix>
+        <VersionSuffix Condition="$(versionsuffix) == ''">beta0007</VersionSuffix>
         <Authors>Six Labors</Authors>
         <TargetFrameworks>netstandard1.3;netstandard2.0;netcoreapp2.0;netcoreapp2.1;</TargetFrameworks>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

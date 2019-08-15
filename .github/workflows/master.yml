@@ -1,0 +1,115 @@
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+name: master
+jobs:
+  build_linux:
+    name: Build Linux
+    container:
+      image: ubuntu:18.04
+    runs-on: ubuntu-latest
+  
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+  
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install -y wget
+        wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+        dpkg -i packages-microsoft-prod.deb
+        apt-get update
+        apt-get install -y dotnet-dev-1.1.13 dotnet-sdk-2.1
+  
+    - name: Set version suffix
+      run: echo dev`date +'%Y%m%d%H%M'` > versionsuffix
+  
+    - name: Restore projects
+      run: dotnet restore SixLabors.Core.sln
+  
+    - name: Build projects
+      run: |
+        versionsuffix=`cat versionsuffix`
+        dotnet build -c Release /p:versionsuffix=$versionsuffix
+  
+    - name: Test projects
+      run: dotnet test -c Release --no-build
+
+  build_macos:
+    name: Build MacOS
+    runs-on: macos-latest
+  
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+  
+    - name: Set version suffix
+      run: echo dev`date +'%Y%m%d%H%M'` > versionsuffix
+  
+    - name: Restore projects
+      run: dotnet restore SixLabors.Core.sln
+  
+    - name: Build projects
+      run: |
+        versionsuffix=`cat versionsuffix`
+        dotnet build -c Release /p:versionsuffix=$versionsuffix
+  
+    - name: Test projects
+      run: dotnet test -c Release --no-build
+
+  build_windows:
+    name: Build Windows
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: 1
+
+    - name: Set version suffix
+      run: powershell -Command "Get-Date -format \devyyyyMMddHHmm" > versionsuffix
+
+    - name: Download NuGet
+      run: |
+        powershell -Command "Invoke-WebRequest https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile tests\CodeCoverage\nuget.exe"
+
+    - name: Restore CodeCoverage package
+      run: |
+        cd tests\CodeCoverage
+        nuget restore packages.config -PackagesDirectory .
+
+    - name: Restore projects
+      run: dotnet restore SixLabors.Core.sln
+
+    - name: Build projects with CodeCov enabled
+      run: |
+        set /p versionsuffix=<versionsuffix
+        dotnet build -c Release /p:versionsuffix=%versionsuffix% /p:codecov=true
+
+    - name: Test projects
+      run: |
+        tests\CodeCoverage\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:"dotnet.exe" -targetargs:"test tests\SixLabors.Core.Tests\SixLabors.Core.Tests.csproj --no-build -c release" -searchdirs:"tests\SixLabors.Core.Tests\bin\Release\netcoreapp2.1" -register:user -output:.\SixLabors.Core.Coverage.xml -hideskipped:All -returntargetcode -oldStyle -filter:"+[SixLabors.*]*"
+
+    - name: Publish code coverage
+      run: |
+        pip install codecov
+        set CODECOV_TOKEN=${{secrets.CODECOV_TOKEN}}
+        codecov -f "SixLabors.Core.Coverage.xml"
+
+    - name: Rebuild projects
+      run: |
+        set /p versionsuffix=<versionsuffix
+        dotnet build -c Release /p:versionsuffix=%versionsuffix%
+
+    - name: Create package
+      run: |
+        set /p versionsuffix=<versionsuffix
+        dotnet pack -c Release --no-build /p:versionsuffix=%versionsuffix%
