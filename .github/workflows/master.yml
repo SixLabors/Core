@@ -112,4 +112,4 @@ jobs:
     - name: Create package
       run: |
         set /p versionsuffix=<versionsuffix
-        dotnet pack -c Release --no-build /p:versionsuffix=%versionsuffix%
+        dotnet pack -c Release --no-build --include-symbols /p:versionsuffix=%versionsuffix%
